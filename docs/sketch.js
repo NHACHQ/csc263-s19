@@ -29,31 +29,33 @@ var Edge = function(){
 		fill(255,0,0);
 		strokeWeight(3);
 		var last = lines.length-1;
-		if(ptlist_!=undefined && !(lines[last][2]==displayWidth && lines[last][3]==0)){
+		if(ptlist_!=undefined){
+			if(!(lines[last][2]==displayWidth && lines[last][3]==0)){
+				if(xdir_==1){
 
-			if(xdir_==1){
-
-				if(ptlist_[curr_][0] == lines[last][2]){
-					xdir_=0;
-					ydir_=(ptlist_[curr_][1]-lines[last][3])/abs(ptlist_[curr_][1]-lines[last][3]);	
-					lines.push([lines[last][2],lines[last][3],lines[last][2],lines[last][3]]);
-				}
-			}
-			else{
-				if(ptlist_[curr_][1] == lines[last][3]){
-					xdir_=1;
-					ydir_=0;
-					ellipseMode(CENTER);
-					lines.push([ptlist_[curr_][0],ptlist_[curr_][1],ptlist_[curr_][0],ptlist_[curr_][1]]);
-					curr_++;
-					if(curr_ == ptlist_.length){
-						ptlist_.push([displayWidth+1,0]);
+					if(ptlist_[curr_][0] == lines[last][2]){
+						xdir_=0;
+						ydir_=(ptlist_[curr_][1]-lines[last][3])/abs(ptlist_[curr_][1]-lines[last][3]);	
+						lines.push([lines[last][2],lines[last][3],lines[last][2],lines[last][3]]);
 					}
 				}
+				else{
+					if(ptlist_[curr_][1] == lines[last][3]){
+						xdir_=1;
+						ydir_=0;
+						ellipseMode(CENTER);
+						lines.push([ptlist_[curr_][0],ptlist_[curr_][1],ptlist_[curr_][0],ptlist_[curr_][1]]);
+						curr_++;
+						if(curr_ == ptlist_.length){
+							ptlist_.push([displayWidth+1,0]);
+						}
+					}
+				}
+				last = lines.length-1;
+				lines[last][2]+=xdir_;
+				lines[last][3]+=ydir_;
 			}
-			last = lines.length-1;
-			lines[last][2]+=xdir_;
-			lines[last][3]+=ydir_;
+
 			for(var i=0;i<lines.length;i++){
 				line(lines[i][0],lines[i][1],lines[i][2],lines[i][3]);
 			}
@@ -79,9 +81,9 @@ var Edge = function(){
 					fill(0,0,0);					
 				}
 				textSize(14);
-				text('pt ' + (i+1) + ' : (' + ptlist_[i][0] + ' , ' + ptlist_[i][1]+ ')', 700,200+i*18);
-				pop(); 
-			}			
+				text('pt ' + (i) + ' : (' + ptlist_[i][0] + ' , ' + ptlist_[i][1]+ ')', 700,200+i*18);
+				pop(); 			
+			}
 		}
 		pop();
 	}
@@ -96,9 +98,9 @@ function setup() {
 	createCanvas(900,500);
 
 	for(var i=0;i<rectangles.length;i++){
-		var r=random(0,255);
-		var g=random(0,255);
-		var b=random(0,255);
+		var r=random(0,235);
+		var g=random(0,235);
+		var b=random(0,235);
 		rectColours.push(color(r,g,b,150));
 	}
 	edge=Edge();
@@ -109,8 +111,18 @@ function draw() {
 	background(255,255,255);
 
 	for(var i=0;i<rectangles.length;i++){
-		fill(rectColours[i]);
-		rect(rectangles[i][0],0,rectangles[i][1]-rectangles[i][0],rectangles[i][2]);		
+		push();
+		textSize(14);
+		if((mouseX >=500 && mouseX <=650) && (mouseY >250+(i-1)*20 && mouseY <= 250+(i)*20)){
+			strokeWeight(2);
+			fill(red(rectColours[i])+10,green(rectColours[i])+10,blue(rectColours[i])+10,200);
+		}
+		else{		
+			fill(rectColours[i]);
+		}
+		text('rect ' + (i) + ' : (' + rectangles[i][0] + ' , ' + rectangles[i][1] + ' , ' + rectangles[i][2]+ ')', 500,250+i*20);
+		rect(rectangles[i][0],0,rectangles[i][1]-rectangles[i][0],rectangles[i][2]);
+		pop();
 	}
 	edge.draw();
 
