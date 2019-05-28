@@ -24,7 +24,7 @@ class AVL{
 		}
 		void updateHeight(){
 			int heightRight=(right_)?right_->height_:-1;
-			int heightLeft=(left_)?left_->height_:-1;
+			int heightLeft=(left_)?left_->height_:-1;-
 			height_=(heightRight>heightLeft)?heightRight+1:heightLeft+1;
 		}
 	};
@@ -238,7 +238,7 @@ public:
 
 	//this is essentially a breadth first print function
 	//However, it also draws the tree structure in
-	//ascii art...it gets pretty ugly code to support
+	//ascii art...code is pretty ugly  to support
 	//the formatting, don't worry about
 	//figuring out how this works... its only to support 
 	//good looking output
