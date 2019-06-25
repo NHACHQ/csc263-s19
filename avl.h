@@ -24,7 +24,7 @@ class AVL{
         }
         void updateHeight(){
             int heightRight=(right_)?right_->height_:-1;
-            int heightLeft=(left_)?left_->height_:-1;-
+            int heightLeft=(left_)?left_->height_:-1;
             height_=(heightRight>heightLeft)?heightRight+1:heightLeft+1;
         }
     };
@@ -125,11 +125,14 @@ class AVL{
             printTreeInorder(subtree->right_);
         }
     }
-    void printTreePreorder(const Node* subtree) const{
+    void printTreePreorder(const Node* subtree,int lvl) const{
         if(subtree){
-            std::cout << subtree->data_ << " - ";
-            printTreePreorder(subtree->left_);
-            printTreePreorder(subtree->right_);
+            for(int i=0;i<lvl;i++){
+                std::cout << "---";
+            }
+            std::cout << subtree->data_ << std::endl;
+            printTreePreorder(subtree->left_,lvl+1);
+            printTreePreorder(subtree->right_,lvl+1);
         }
     }
     bool exists(const Node* subtree, const T& value) const{
@@ -150,17 +153,49 @@ class AVL{
     //with root subtree.  Note, it does not delete it, just 
     //detach
     Node* detachMin(Node*& subtree){
+        Node* rc;
         if(subtree->left_){
-            return detachMin(subtree->left_);
+            rc=detachMin(subtree->left_);
+            int bf=balanceFactor(subtree);
+            if(bf >= 2){
+                //rotation needed, left side too tall
+                if(balanceFactor(subtree->right_)==-1){
+                    //bf signs are different, double rotation needed
+                    rightRotate(subtree->right_);
+                    leftRotate(subtree);
+                    subtree->left_->updateHeight();
+                    subtree->right_->updateHeight();
+                }
+                else{
+                    leftRotate(subtree);
+                    subtree->left_->updateHeight();
+                }
+            }
+            //rotation needed, right side too tall
+            else if(bf <= -2){
+                //rotation needed, left side too tall
+                if(balanceFactor(subtree->left_)==1){
+                    //bf signs are different, double rotation needed
+                    leftRotate(subtree->left_);
+                    rightRotate(subtree);
+                    subtree->left_->updateHeight();
+                    subtree->right_->updateHeight();
+                }
+                else{
+                    rightRotate(subtree);
+                    subtree->right_->updateHeight();
+                }
+            }
+            subtree->updateHeight();
         }
         else{
             //hold onto the current node, it is the smallest
-            Node* rc=subtree;
+            rc=subtree;
             //make the pointer to that node point to nodes right
             //subtree which may or may not exist
             subtree=subtree->right_;
-            return rc;
         }
+        return rc;
     }
     void remove(Node*& subtree,const T& value){
         if(subtree){
@@ -170,7 +205,7 @@ class AVL{
                 Node* rm=subtree;   
                 //if subtree has no children
                 if(!subtree->left_ && !subtree->right_){
-                    subtree=0;
+                    subtree=nullptr;
                 }
                 //if there is only a left subtree
                 else if(subtree->left_ && !subtree->right_){
@@ -187,7 +222,8 @@ class AVL{
                     successor->right_=subtree->right_;
                     subtree=successor;
                 }
-
+                //note that at this point, the subtrees are fine, but current
+                //node's height is wrong... we will fix in the next part.
                 delete rm;
             }
             else if(value < subtree->data_){
@@ -195,7 +231,40 @@ class AVL{
             }
             else{
                 remove(subtree->right_,value);
-            }           
+            }
+            if(subtree){
+                int bf=balanceFactor(subtree);
+                if(bf >= 2){
+                    //rotation needed, left side too tall
+                    if(balanceFactor(subtree->right_)==-1){
+                        //bf signs are different, double rotation needed
+                        rightRotate(subtree->right_);
+                        leftRotate(subtree);
+                        subtree->left_->updateHeight();
+                        subtree->right_->updateHeight();
+                    }
+                    else{
+                        leftRotate(subtree);
+                        subtree->left_->updateHeight();
+                    }
+                }
+                //rotation needed, right side too tall
+                else if(bf <= -2){
+                    //rotation needed, left side too tall
+                    if(balanceFactor(subtree->left_)==1){
+                        //bf signs are different, double rotation needed
+                        leftRotate(subtree->left_);
+                        rightRotate(subtree);
+                        subtree->left_->updateHeight();
+                        subtree->right_->updateHeight();
+                    }
+                    else{
+                        rightRotate(subtree);
+                        subtree->right_->updateHeight();
+                    }
+                }
+                subtree->updateHeight();
+            }                       
         }
     }
     void destroy(Node* subtree){
@@ -217,7 +286,9 @@ public:
         insert(root_,value);
 
     }
-
+    int height() const{
+        return height(root_);
+    }
     //returns true if a match value exists
     //in the AVL, false otherwise
     bool exists(const T& value) const{
@@ -236,6 +307,9 @@ public:
         destroy(root_);
     }
 
+    void print() const{
+        printTreePreorder(root_,0);
+    }
     //this is essentially a breadth first print function
     //However, it also draws the tree structure in
     //ascii art...code is pretty ugly  to support
@@ -356,6 +430,23 @@ private:
                 else{
                     std::cout << std::right << std::setfill(' ') << std::setw(firsthalf) << " ";
                     std::cout << std::left <<std::setfill(' ') << std::setw(half)<< data[i]->data_;             
+                }
+            }
+            else{
+                std::cout << std::left <<std::setfill(' ') << std::setw(width)<<" ";            
+            }
+        }
+        std::cout << std::endl;
+
+        for(int i=0;i<numNodes;i++){
+            if(data[i]){
+                if(i%2==0){
+                    std::cout << std::right << std::setw(firsthalf) << balanceFactor(data[i]);
+                    std::cout << std::left <<std::setfill(' ') << std::setw(half)<<" ";
+                }
+                else{
+                    std::cout << std::right << std::setfill(' ') << std::setw(firsthalf) << " ";
+                    std::cout << std::left <<std::setfill(' ') << std::setw(half)<< balanceFactor(data[i]);             
                 }
             }
             else{
